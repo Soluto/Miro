@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+   miro-app:
+     build: ../Miro
+     depends_on:
+      - mock_github_api
+      - mongo
+     environment:
+       - ASPNETCORE_ENVIRONMENT=Development
+       - GITHUB_API_URL=http://mock_github_api:1234/
+       - MONGO_CONNECTION_STRING=mongodb://mongo:27017
+       - WEBHOOKS__GITHUB__SECRETKEY__DEFAULT=614d038b841a4846e27a92cc4b25ce5e54e1ae4a
+     ports:
+       - "5000:80"
+
+   mock_github_api:
+     build: ./MockGithubApi
+     ports:
+       - "3000:3000"
+       - "1234:1234"
+
+   mongo:
+     image: mongo:4.1
+     ports:
+      - "27017:27017"
+      
+   miro-tests:
+     build: .
+     depends_on:
+      - mock_github_api
+      - mongo
+      - miro-app
+     environment:
+      - MONGO_CONNECTION_STRING=mongodb://mongo:27017
+      - SERVER_URL=http://miro-app:80
+      - GITHUB_API_URL=http://mock_github_api:3000 
+     volumes:
+      - ./logs:/app/TestResults      
+

@@ -1,0 +1,13 @@
+{
+  "name": "MockGithubApi",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "escape-string-regexp": "^1.0.5",
+    "express": "^4.16.3",
+    "simple-fake-server": "^2.1.0",
+    "uuid": "^3.3.2"
+  }
+}

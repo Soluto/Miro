@@ -1,0 +1,3 @@
+deleteAfterMerge: false
+mergePolicy: whitelist-strict
+updateBranchStrategy: all

@@ -1,0 +1,20 @@
+ {
+  "action": "created",
+  "issue": {
+    "number": 2
+  },
+  "comment": {
+    "body": "Miro merge"
+  },
+  "repository": {
+    "name": "TEST-REPO",
+    "owner": {
+      "login": "TEST-OWNER",
+      "id": 21031067
+    }
+  },
+  "sender": {
+    "login": "TEST-OWNER",
+    "id": 21031067
+  }
+}

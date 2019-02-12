@@ -1,0 +1,40 @@
+{
+  "action": "submitted",
+  "review": {
+    "state": "approved",
+    "id": 191568743,
+    "title": "Update the README with new information",
+    "user": {
+      "login": "TEST-PR-AUTHOR",
+      "id": 21031067
+    }
+  },
+  "pull_request": {
+    "id": 191568743,
+    "number": 1,
+    "locked": false,
+    "title": "Update the README with new information",
+    "user": {
+      "login": "TEST-PR-AUTHOR",
+      "id": 21031067
+    },
+    "head": {
+      "ref": "some-branch"
+    },
+    "body": "This is a pretty simple change that we need to pull into master.",
+    "mergeable": true,
+    "rebaseable": true,
+    "mergeable_state": "clean"
+  },
+  "repository": {
+    "id": 135493233,
+    "name": "TEST-REPO",
+    "owner": {
+      "login": "TEST-OWNER",
+      "id": 21031067
+    }
+  },
+  "sender": {
+    "login": "TEST-PR-AUTHOR"
+  }
+}
