@@ -18,7 +18,6 @@ Miro was designed to help merge code from Github Pull Requests.
                 - [blacklist](#blacklist)
                 - [whitelist](#whitelist)
                 - [whitelist-strict](#whitelist-strict)
-    - [Miro APIs](#miro-apis)
     - [Contributing](#contributing)
     - [Deploying](#deploying)
 
