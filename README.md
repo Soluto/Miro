@@ -7,6 +7,7 @@ Miro was designed to help merge code from Github Pull Requests.
 <!-- TOC -->
 
 - [MIRO - Merge it robot!](#miro---merge-it-robot)
+    - [Deploying](#deploying)
     - [How does it work](#how-does-it-work)
         - [Miro Merge Command](#miro-merge-command)
         - [Miro Cancel Command](#miro-cancel-command)
@@ -19,9 +20,15 @@ Miro was designed to help merge code from Github Pull Requests.
                 - [whitelist](#whitelist)
                 - [whitelist-strict](#whitelist-strict)
     - [Contributing](#contributing)
-    - [Deploying](#deploying)
 
 <!-- /TOC -->
+
+
+## Deploying
+Miro is a completely Open-Source project written in .NET Core.
+To use Miro in your org/team/projects all you need to do is pull + run the [miro docker image](https://cloud.docker.com/repository/docker/oresoluto/miro).    
+
+Learn more about deploying Miro in the [deploying readme](./docs/DEPLOYING.md)
 
 
 ## How does it work
@@ -90,6 +97,3 @@ Only PRs that typed `miro-merge` will be merged
 
 ## Contributing
 Read the [contribution readme](./docs/CONTRIBUTING.md)
-
-## Deploying
-Read the [deploying readme](./docs/DEPLOYING.md)
