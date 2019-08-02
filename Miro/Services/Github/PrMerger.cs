@@ -31,8 +31,8 @@ namespace Miro.Services.Github
 
             var payload = new MergePrPayload()
             {
-                CommitMessage = $"{title}",
-                CommitTitle = $"{title}",
+                CommitMessage = $"Merging PR #{prId} - {title}",
+                CommitTitle = $"{title} (Merging PR #{prId})",
                 MergeMethod = "squash",
             };
 
