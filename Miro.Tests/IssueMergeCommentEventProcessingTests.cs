@@ -173,7 +173,6 @@ namespace Miro.Tests
 
             // Mock Github Calls
             await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
-            var commentReadyForMergingCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
             var mergeFailedCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubCallMergeFailed(owner, repo, PR_ID);
             var mergePrCallId = await MockGithubCall("put", $"{PrUrlFor(owner, repo, PR_ID)}/merge", null, 409);
             var updateBranchCallId = await MockGithubCall("post", MergesUrlFor(owner, repo), branch, "ok", false);
@@ -185,12 +184,10 @@ namespace Miro.Tests
             // Assert
             var mergePrCall = await GetCall(mergePrCallId);
             var updateBranchCall = await GetCall(updateBranchCallId);
-            var commentReadyForMergingCall = await GetCall(commentReadyForMergingCallId);
             var mergeFailedCommentCall = await GetCall(mergeFailedCommentCallId);
             var miroMergeCheckCall = await GetCall(miroMergeCheckCallId);
             Assert.True(mergePrCall.HasBeenMade, "PR should have tried to merge");
             Assert.True(miroMergeCheckCall.HasBeenMade, "miro merge check success call should have been made");
-            Assert.True(commentReadyForMergingCall.HasBeenMade, "should get ready for merging comment");
             Assert.True(updateBranchCall.HasBeenMade, "PR should have updated branch");
             Assert.True(mergeFailedCommentCall.HasBeenMade, "should get PR merge failed comment");
             var mergeRequest = await mergeRequestsCollection.Collection.Find(d => d["Owner"] == owner && d["Repo"] == repo && d["PrId"] == PR_ID && d["ReceivedMergeCommand"] == true).FirstAsync();
@@ -222,7 +219,6 @@ namespace Miro.Tests
 
             // Mock Github Calls
             await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
-            var commentReadyForMergingCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
             var mergeFailedCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubCallMergeFailed(owner, repo, PR_ID);
             var mergePrCallId = await MockGithubCall("put", $"{PrUrlFor(owner, repo, PR_ID)}/merge", null, 409);
             var updateBranchCallId = await MockGithubCall("post", MergesUrlFor(owner, repo), branch, "ok", false);
@@ -234,12 +230,10 @@ namespace Miro.Tests
             // Assert
             var mergePrCall = await GetCall(mergePrCallId);
             var updateBranchCall = await GetCall(updateBranchCallId);
-            var commentReadyForMergingCall = await GetCall(commentReadyForMergingCallId);
             var mergeFailedCommentCall = await GetCall(mergeFailedCommentCallId);
             var miroMergeCheckCall = await GetCall(miroMergeCheckCallId);
             Assert.True(mergePrCall.HasBeenMade, "PR should have tried to merge");
             Assert.False(miroMergeCheckCall.HasBeenMade, "miro merge check success call should not have been made in a blacklist merge policy");
-            Assert.True(commentReadyForMergingCall.HasBeenMade, "should get ready for merging comment");
             Assert.True(updateBranchCall.HasBeenMade, "PR should have updated branch");
             Assert.True(mergeFailedCommentCall.HasBeenMade, "should get PR merge failed comment");
             var mergeRequest = await mergeRequestsCollection.Collection.Find(d => d["Owner"] == owner && d["Repo"] == repo && d["PrId"] == PR_ID && d["ReceivedMergeCommand"] == true).FirstAsync();
@@ -269,7 +263,6 @@ namespace Miro.Tests
 
             // Mock Github Calls
             await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
-            await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
             await MockCommentGithubCallHelper.MockCommentGithubCallMergeFailed(owner, repo, PR_ID);
             await MockGithubCall("put", $"{PrUrlFor(owner, repo, PR_ID)}/merge", null, 404);
             await MockGithubCall("post", StatusCheckUrlFor(owner, repo, sha), "{}", false);
@@ -311,15 +304,12 @@ namespace Miro.Tests
             var mergeCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubCallMerging(owner, repo, PR_ID);
             var mergePrCallId = await MockMergeGithubCallHelper.MockMergeCall(owner, repo, PR_ID);
             await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
-            var commentReadyForMergingCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
 
             // Action
             await SendWebhookRequest("issue_comment", JsonConvert.SerializeObject(payload));
 
-            var commentReadyForMergingCall = await GetCall(commentReadyForMergingCallId);
             var mergeCommentCall = await GetCall(mergeCommentCallId);
             var mergePrCall = await GetCall(mergePrCallId);
-            Assert.True(commentReadyForMergingCall.HasBeenMade, "should have receieved a ready for merging comment");
             Assert.True(mergeCommentCall.HasBeenMade, "a merging comment should have been posted to the pr");
             Assert.True(mergePrCall.HasBeenMade, "pr should have been merged");
 
@@ -352,17 +342,14 @@ namespace Miro.Tests
             var mergeCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubCallMerging(owner, repo, PR_ID);
             var mergePrCallId = await MockMergeGithubCallHelper.MockMergeCall(owner, repo, PR_ID);
             await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
-            var commentReadyForMergingCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
             var miroMergeCheckCallId = await MockGithubCall("post", StatusCheckUrlFor(owner, repo, sha), "{}", false);
 
             // Action
             await SendWebhookRequest("issue_comment", JsonConvert.SerializeObject(payload));
 
-            var commentReadyForMergingCall = await GetCall(commentReadyForMergingCallId);
             var mergeCommentCall = await GetCall(mergeCommentCallId);
             var mergePrCall = await GetCall(mergePrCallId);
             var miroMergeCheckCall = await GetCall(miroMergeCheckCallId);
-            Assert.True(commentReadyForMergingCall.HasBeenMade, "should have receieved a ready for merging comment");
             Assert.True(mergeCommentCall.HasBeenMade, "a merging comment should have been posted to the pr");
             Assert.True(miroMergeCheckCall.HasBeenMade, "a call to miro merge status check should have been called");
             Assert.True(mergePrCall.HasBeenMade, "pr should have been merged");
@@ -395,18 +382,15 @@ namespace Miro.Tests
             var mergeCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubCallMerging(owner, repo, PR_ID);
             var mergePrCallId = await MockMergeGithubCallHelper.MockMergeCall(owner, repo, PR_ID);
             await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
-            var commentReadyForMergingCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
             var getRequiredChecksCallId = await MockRequiredChecksGithubCallHelper.MockRequiredChecks(owner, repo, new string[] {Consts.TEST_CHECK_A, Consts.TEST_CHECK_B});
 
             // Action
             await SendWebhookRequest("issue_comment", JsonConvert.SerializeObject(payload));
 
             // Assert
-            var commentReadyForMergingCall = await GetCall(commentReadyForMergingCallId);
             var mergeCommentCall = await GetCall(mergeCommentCallId);
             var mergePrCall = await GetCall(mergePrCallId);
             var getRequiredChecksCall = await GetCall(getRequiredChecksCallId);
-            Assert.True(commentReadyForMergingCall.HasBeenMade, "should have receieved a ready for merging comment");
             Assert.True(mergeCommentCall.HasBeenMade, "a merging comment should have been posted to the pr");
             Assert.True(getRequiredChecksCall.HasBeenMade, "should have fetched required checks");
             Assert.True(mergePrCall.HasBeenMade, "pr should have been merged");

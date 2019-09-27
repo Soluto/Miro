@@ -31,37 +31,6 @@ namespace Miro.Tests
             this.checkListsCollection = new CheckListsCollection();
         }
 
-         [Fact]
-        public async Task ReceiveInfoCommand_AllChecksPassed_WriteSuccessComment()
-        {
-            var payloadString = await File.ReadAllTextAsync("../../../DummyEvents/IssueComment.json");
-            var payload = JsonConvert.DeserializeObject<dynamic>(payloadString);
-
-            var owner = Guid.NewGuid().ToString();
-            var repo = Guid.NewGuid().ToString();
-
-            // Insert Checkslist and PR to DB
-            await checkListsCollection.InsertWithDefaultChecks(owner, repo);
-            await mergeRequestsCollection.InsertWithTestChecksSuccess(owner, repo, PR_ID);
-
-            payload["repository"]["name"] = repo;
-            payload["repository"]["owner"]["login"] = owner;
-            payload["issue"]["number"] = PR_ID;
-            payload["comment"]["body"] = "Miro info";
-
-            // Mock Github Calls
-            var successCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
-            await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
-
-            // ACTION
-            await SendWebhookRequest("issue_comment", JsonConvert.SerializeObject(payload));
-
-            // ASSERT
-            var successCommentCall = await GetCall(successCommentCallId);
-            Assert.True(successCommentCall.HasBeenMade, "Should have recieved a - PR is ready for merging comment");
-        }
-
-
         [Fact]
         public async Task ReceiveInfoCommand_AllChecksPassed_PrHasPendingReviews_WriteErrorComment()
         {

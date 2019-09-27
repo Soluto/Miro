@@ -40,12 +40,7 @@ namespace Miro.Tests.Helpers
         {
             return MockCommentGithubCall(owner, repo, prId, "Work in Progress");
         }
-
-        public static Task<string> MockCommentGithubPRIsReadyForMerging(string owner, string repo, int prId)
-        {
-            return MockCommentGithubCall(owner, repo, prId, "PR ready for merging");
-        }
-
+        
         public static Task<string> MockCommentGithubCallPendingReviews(string owner, string repo, int prId, string reviewer)
         {
             return MockCommentGithubCall(owner, repo, prId, reviewer);
