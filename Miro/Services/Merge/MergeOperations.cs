@@ -52,13 +52,6 @@ namespace Miro.Services.Merge
                 return false;
             }
 
-            if (!mergeRequest.ReceivedMergeCommand)
-            {
-                logger.WithMergeRequestData(mergeRequest).Information($"PR missing merge command, printing comment to remind the developer to use miro");
-                await commentCreator.CreateComment(mergeRequest.Owner, mergeRequest.Repo, mergeRequest.PrId, CommentsConsts.MiroInfoMergeReady, CommentsConsts.PrIsMergeableBody);
-                return false;
-            }
-
             return await MergeOrUpdateBranch(mergeRequest);
         }
 
