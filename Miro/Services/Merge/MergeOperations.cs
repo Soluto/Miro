@@ -58,11 +58,7 @@ namespace Miro.Services.Merge
                 logger.WithMergeRequestData(mergeRequest).Information($"PR can't be merged, found mergeability validation errors");
                 return false;
             }
-             if (!mergeRequest.ReceivedMergeCommand)
-             {
-                return false;
-             }
-
+            
             return await MergeOrUpdateBranch(mergeRequest);
         }
 
