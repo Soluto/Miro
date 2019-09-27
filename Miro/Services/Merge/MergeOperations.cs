@@ -44,6 +44,13 @@ namespace Miro.Services.Merge
                 logger.Warning($"Received TryToMerge command from a null mergeRequest");
                 throw new Exception("Can not merge, PR is not defined");
             }
+
+            if (!mergeRequest.ReceivedMergeCommand)
+            {
+                logger.WithMergeRequestData(mergeRequest).Information($"PR can't be merged, missing merge command");
+                return false;
+            }
+
             var mergeabilityValidationErrors = await mergeabilityValidator.ValidateMergeability(mergeRequest);
 
             if (mergeabilityValidationErrors.Any())
@@ -51,14 +58,7 @@ namespace Miro.Services.Merge
                 logger.WithMergeRequestData(mergeRequest).Information($"PR can't be merged, found mergeability validation errors");
                 return false;
             }
-
-            if (!mergeRequest.ReceivedMergeCommand)
-            {
-                logger.WithMergeRequestData(mergeRequest).Information($"PR missing merge command, printing comment to remind the developer to use miro");
-                await commentCreator.CreateComment(mergeRequest.Owner, mergeRequest.Repo, mergeRequest.PrId, CommentsConsts.MiroInfoMergeReady, CommentsConsts.PrIsMergeableBody);
-                return false;
-            }
-
+            
             return await MergeOrUpdateBranch(mergeRequest);
         }
 

@@ -100,17 +100,14 @@ namespace Miro.Tests
             await mergeRequestsCollection.Insert(owner, repo, PR_ID, Consts.DEFAULT_BRANCH, false, checksAlreadyCompleted, sha);
 
             var mergePrCallId = await MockMergeGithubCallHelper.MockMergeCall(owner, repo, PR_ID);
-            var prReadyForMergingCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
 
             await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
 
             await SendWebhookRequest("status", JsonConvert.SerializeObject(payload));
 
             var mergePrCall = await GetCall(mergePrCallId);
-            var prReadyForMergingCommentCall = await GetCall(prReadyForMergingCommentCallId);
             var mergeRequest = await mergeRequestsCollection.Collection.Find(d => d["Owner"] == owner && d["Repo"] == repo && d["PrId"] == PR_ID).FirstAsync();
 
-            Assert.True(prReadyForMergingCommentCall.HasBeenMade, "a comment for PR ready for merging should have been called");
             Assert.False(mergePrCall.HasBeenMade, "the pr shouldn't be merged");
         }
 
