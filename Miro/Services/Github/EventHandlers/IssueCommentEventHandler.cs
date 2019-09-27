@@ -124,7 +124,6 @@ namespace Miro.Services.Github.EventHandlers
         {
             var mergeRequest = await mergeRequestRepository.UpdateMergeCommand(owner, repo, prId, true, DateTime.UtcNow);
 
-            await PrintMergeInfo(mergeRequest);
             var config = await repoConfigManager.GetConfig(owner, repo);
             if (config.IsWhitelistStrict())
             {
