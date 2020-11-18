@@ -72,7 +72,6 @@ On every push to `master` Miro will grab the latest `.miro.yml` file if it exist
 It can look like this:
 
 ```yml
-deleteAfterMerge: true|false # delete branch after meging - default: true
 
 updateBranchStrategy: all|oldest|none # When a PR is merged, how do we update the next - default: oldest
 

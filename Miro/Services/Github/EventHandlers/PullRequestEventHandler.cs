@@ -106,27 +106,15 @@ namespace Miro.Services.Github.EventHandlers
             var prId = payload.Number;
             var extraLoggerData = new { owner, repo, prId };
 
-             logger.WithExtraData(extraLoggerData).Information("Handling PR closed event for PR - Deleting");
+             logger.WithExtraData(extraLoggerData).Information("Handling PR closed event for PR - Deleting from DB");
                 var deletedMergeRequest = await mergeRequestRepository.Delete(owner, repo, prId);
 
                 if (deletedMergeRequest != null && payload.PullRequest.Merged)
             {
-                logger.WithExtraData(extraLoggerData).Information($"PR was merged, deleting branch");
-                var wasBranchDeleted = await DeleteBranchByStrategy(deletedMergeRequest);
-                return new WebhookResponse(true, $"PR merged event, was branch deleted: {wasBranchDeleted}");
+                logger.WithExtraData(extraLoggerData).Information($"PR was merged");
+                return new WebhookResponse(true, $"PR merged event");
             }
             return new WebhookResponse(true, "PR closed event");
-        }
-
-        private async Task<bool> DeleteBranchByStrategy(MergeRequest mergeRequestToDelete)
-        {
-            var config = await repoConfigManager.GetConfig(mergeRequestToDelete.Owner, mergeRequestToDelete.Repo);
-            if (config.DeleteAfterMerge)
-            {
-                await prDeleter.DeleteBranch(mergeRequestToDelete.Owner, mergeRequestToDelete.Repo, mergeRequestToDelete.Branch);
-                return true;
-            }
-            return false;
         }
 
         private async Task<WebhookResponse> HandleOpenedEvent(PullRequestEvent payload)
