@@ -6,6 +6,7 @@ using MongoDB.Driver;
 
 namespace MiroConfig
 {
+
     public class RepoConfigRepository
     {
         private readonly IMongoCollection<RepoConfig> collection;
