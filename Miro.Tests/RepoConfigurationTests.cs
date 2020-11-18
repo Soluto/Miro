@@ -90,7 +90,7 @@ namespace Miro.Tests
             Assert.NotNull(repoConfig);
             Assert.Equal("all", repoConfig["UpdateBranchStrategy"]);
             Assert.Equal("whitelist-strict", repoConfig["MergePolicy"]);
-            Assert.True((bool) repoConfig["quiet"]);
+            Assert.True((bool) repoConfig["Quiet"]);
         }
         
 
