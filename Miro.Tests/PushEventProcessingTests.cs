@@ -74,7 +74,7 @@ namespace Miro.Tests
             var sha = Guid.NewGuid().ToString();
             
             // Load checks in DB
-            await repoConfigurationCollection.Insert(owner, repo, false, "oldest", "whitelist-strict");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "whitelist-strict");
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
             await mergeRequestsCollection.InsertWithTestChecksSuccessAndMergeCommand(owner, repo, PR_ID, branchName, oldSha);
 

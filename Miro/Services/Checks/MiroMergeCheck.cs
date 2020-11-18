@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Miro.Models.Checks;
 using Miro.Models.Github.Responses;
 using Miro.Models.Merge;
+using Miro.Services.Comments;
 using Miro.Services.Github;
 using Miro.Services.Github.EventHandlers;
 using Miro.Services.Logger;
@@ -17,7 +18,6 @@ namespace Miro.Services.Checks
 {
     public class MiroMergeCheck
     {
-        private readonly string MIRO_MERGE_CHECK = "Miro merge check";
         private readonly GithubHttpClient githubHttpClient;
         private readonly PrStatusChecks prStatusCheckUpdater;
         private readonly ILogger logger = Log.ForContext<MiroMergeCheck>();
@@ -40,7 +40,7 @@ namespace Miro.Services.Checks
             
             try
             {
-                await prStatusCheckUpdater.UpdateStatusCheck(owner, repo, sha, MIRO_MERGE_CHECK, "pending");
+                await prStatusCheckUpdater.UpdateStatusCheck(owner, repo, sha, CommentsConsts.MiroMergeCheckName, "pending");
             }
             catch (Exception e)
             {
@@ -59,14 +59,14 @@ namespace Miro.Services.Checks
             
             try
             {
-                await prStatusCheckUpdater.UpdateStatusCheck(owner, repo, sha, MIRO_MERGE_CHECK);
+                await prStatusCheckUpdater.UpdateStatusCheck(owner, repo, sha, CommentsConsts.MiroMergeCheckName);
             }
             catch (Exception e)
             {
                 logger.WithMergeRequestData(mergeRequest).Error(e, $"Could not resolve Miro Merge check on sha, retrying with branch");
                 try
                 {
-                    await prStatusCheckUpdater.UpdateStatusCheck(owner, repo, branch, MIRO_MERGE_CHECK);
+                    await prStatusCheckUpdater.UpdateStatusCheck(owner, repo, branch, CommentsConsts.MiroMergeCheckName);
                 }
                 catch (Exception er)
                 {

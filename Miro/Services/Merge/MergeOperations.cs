@@ -6,6 +6,7 @@ using Miro.Services.Checks;
 using Miro.Services.Comments;
 using Miro.Services.Github;
 using Miro.Services.Logger;
+using Miro.Services.MiroConfig;
 using Serilog;
 
 namespace Miro.Services.Merge
@@ -18,6 +19,7 @@ namespace Miro.Services.Merge
         private readonly MergeRequestsRepository mergeRequestRepository;
         private readonly MiroMergeCheck miroMergeCheck;
         private readonly MergeabilityValidator mergeabilityValidator;
+        private readonly RepoConfigManager repoConfigManager;
 
         private readonly ILogger logger = Log.ForContext<MergeOperations>();
 
@@ -27,6 +29,7 @@ namespace Miro.Services.Merge
                             CommentCreator commentCreator,
                             MergeRequestsRepository mergeRequestRepository,
                             MiroMergeCheck miroMergeCheck,
+                            RepoConfigManager repoConfigManager,
                             MergeabilityValidator mergeabilityValidator)
         {
             this.prMerger = prMerger;
@@ -35,6 +38,7 @@ namespace Miro.Services.Merge
             this.mergeRequestRepository = mergeRequestRepository;
             this.miroMergeCheck = miroMergeCheck;
             this.mergeabilityValidator = mergeabilityValidator;
+            this.repoConfigManager = repoConfigManager;
         }
 
         public async Task<bool> TryToMerge(MergeRequest mergeRequest)
@@ -83,9 +87,13 @@ namespace Miro.Services.Merge
             var repo = mergeRequest.Repo;
             var prId = mergeRequest.PrId;
             var branch = mergeRequest.Branch;
+            var config = await repoConfigManager.GetConfig(owner, repo);
+            var quiet = config.Quiet;
 
             logger.WithMergeRequestData(mergeRequest).Information($"A READY merge request for PR found, merging");
-            await commentCreator.CreateListedComment(owner, repo, prId, CommentsConsts.Merging, mergeRequest.Checks.Select(x => $":heavy_check_mark: {x.Name}").ToList());
+            if (!quiet) {
+                await commentCreator.CreateListedComment(owner, repo, prId, CommentsConsts.Merging, mergeRequest.Checks.Select(x => $":heavy_check_mark: {x.Name}").ToList());
+            }
             try
             {
                 await prMerger.Merge(mergeRequest);

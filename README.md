@@ -72,13 +72,14 @@ On every push to `master` Miro will grab the latest `.miro.yml` file if it exist
 It can look like this:
 
 ```yml
-deleteAfterMerge: true|false # delete branch after meging - default: true
 
 updateBranchStrategy: all|oldest|none # When a PR is merged, how do we update the next - default: oldest
 
 mergePolicy: whitelist|blacklist|whitelist-strict # Merging strategy - default: whitelist
 
 defaultBranch: master # describes the branch that Miro listens to for updating, merging and all operations - default: master
+
+quiet: false # if set to true, Miro will write less commits on your repo, notifiying you only when merging fails
 ```
 
 #### mergePolicy (whitelist | blacklist | whitelist-strict)

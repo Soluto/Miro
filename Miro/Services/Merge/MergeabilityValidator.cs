@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Miro.Models.Merge;
 using Miro.Models.Validation;
 using Miro.Services.Checks;
+using Miro.Services.Comments;
 using Miro.Services.Github;
 using Miro.Services.Logger;
 using Serilog;
@@ -24,7 +25,7 @@ namespace Miro.Services.Merge
             this.checksManager = checksManager;
         }
 
-        public async Task<List<ValidationError>> ValidateMergeability(MergeRequest mergeRequest)
+        public async Task<List<ValidationError>> ValidateMergeability(MergeRequest mergeRequest, bool ignoreMiroMergeCheck = false)
         {
             var owner = mergeRequest.Owner;
             var repo = mergeRequest.Repo;
@@ -43,7 +44,7 @@ namespace Miro.Services.Merge
                 errors.Add(changesRequestedError);
             }
 
-            var missingChecksError = await ValidateNoChecksMissing(mergeRequest);
+            var missingChecksError = await ValidateNoChecksMissing(mergeRequest, ignoreMiroMergeCheck);
             if (missingChecksError != null)
             {
                 errors.Add(missingChecksError);
@@ -53,12 +54,12 @@ namespace Miro.Services.Merge
 
         private async Task<ValidationError> ValidateNoPendingReviews(string owner, string repo, int prId)
         {
-            logger.WithExtraData(new {owner, repo, prId}).Information("Checking if PR has pending reviews");
+            logger.WithExtraData(new { owner, repo, prId }).Information("Checking if PR has pending reviews");
             var requestedReviewers = await reviewsRetriever.GetRequestedReviewers(owner, repo, prId);
 
             if (requestedReviewers.Teams.Any() || requestedReviewers.Users.Any())
             {
-                logger.WithExtraData(new {owner, repo, prId}).Information("PR has pending reviews");
+                logger.WithExtraData(new { owner, repo, prId }).Information("PR has pending reviews");
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine("Still waiting for a review from: ");
                 requestedReviewers.Teams.ForEach(t => stringBuilder.AppendLine(t.Name));
@@ -70,13 +71,18 @@ namespace Miro.Services.Merge
             return null;
         }
 
-        private async Task<ValidationError> ValidateNoChecksMissing(MergeRequest mergeRequest)
+        private async Task<ValidationError> ValidateNoChecksMissing(MergeRequest mergeRequest, bool ignoreMiroMergeCheck)
         {
             logger.WithMergeRequestData(mergeRequest).Information("Checking if PR has missing checks");
 
             var missingChecks = await checksManager.GetMissingChecks(mergeRequest.Owner, mergeRequest.Repo, mergeRequest.Checks);
             if (missingChecks.Any())
             {
+                if (ignoreMiroMergeCheck && missingChecks.Count == 1 && missingChecks[0] == CommentsConsts.MiroMergeCheckName)
+                {
+                    logger.WithMergeRequestData(mergeRequest).Information($"Only missing check is Miro merge check, skipping");
+                    return null;
+                }
                 logger.WithMergeRequestData(mergeRequest).Information($"PR has missing checks");
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine("Pending status checks: ");

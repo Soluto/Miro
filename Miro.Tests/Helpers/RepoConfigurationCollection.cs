@@ -20,16 +20,16 @@ namespace Miro.Tests.Helpers
 
         public IMongoCollection<BsonDocument> Collection { get; }
 
-        public async Task Insert(string owner, string repo, bool deleteAfterMerge = false, string updateBranchStrategy = "oldest", string mergePolicy = "blacklist", string defaultBranch = "master")
+        public async Task Insert(string owner, string repo, string updateBranchStrategy = "oldest", string mergePolicy = "blacklist", string defaultBranch = "master", bool quiet = false)
         {
             var repoConfig = new BsonDocument();
             repoConfig["Owner"] = owner;
             repoConfig["Repo"] = repo;
-            repoConfig["DeleteAfterMerge"] = deleteAfterMerge;
             repoConfig["UpdateBranchStrategy"] = updateBranchStrategy;
             repoConfig["MergePolicy"] = mergePolicy;
             repoConfig["UpdatedAt"] = DateTime.UtcNow;
             repoConfig["DefaultBranch"] = defaultBranch;
+            repoConfig["Quiet"] = quiet;
             await Collection.InsertOneAsync(repoConfig);
         }
 

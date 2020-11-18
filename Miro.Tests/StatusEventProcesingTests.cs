@@ -354,7 +354,7 @@ namespace Miro.Tests
 
             // Required test is TEST_CHECK_A
             await checkListsCollection.Insert(owner, repo, new string[]{Consts.TEST_CHECK_A});
-            await repoConfigurationCollection.Insert(owner, repo, false, "oldest", "blacklist");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "blacklist");
 
             // Create Pull Request
             await OpenBlackListPullRequest(owner, repo, PR_ID, sha);

@@ -1,0 +1,3 @@
+mergePolicy: whitelist-strict
+updateBranchStrategy: all
+quiet: true

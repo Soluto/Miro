@@ -70,7 +70,7 @@ namespace Miro.Tests
             var sha = Guid.NewGuid().ToString();
 
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
-            await repoConfigurationCollection.Insert(owner, repo, true, "oldest", "whitelist-strict", "production");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "whitelist-strict", "production");
 
             payload["repository"]["name"] = repo;
             payload["repository"]["owner"]["login"] = owner;
@@ -95,7 +95,7 @@ namespace Miro.Tests
             var sha = Guid.NewGuid().ToString();
 
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
-            await repoConfigurationCollection.Insert(owner, repo, true, "oldest", "whitelist-strict");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "whitelist-strict");
 
             // Mock Github call to add miro merge status check
             var miroMergeCheckCallId = await MockGithubCall("post", StatusCheckUrlFor(owner, repo, sha), "pending", "{}", false);
@@ -129,7 +129,7 @@ namespace Miro.Tests
             var sha = Guid.NewGuid().ToString();
 
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
-            await repoConfigurationCollection.Insert(owner, repo, true, "oldest", "blacklist");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "blacklist");
 
             // Mock Github call to add miro merge status check
             var miroMergeCheckCallId = await MockGithubCall("post", StatusCheckUrlFor(owner, repo, sha), "pending", "{}", false);
@@ -164,7 +164,7 @@ namespace Miro.Tests
             var title = "[WIP] title of PR";
 
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
-            await repoConfigurationCollection.Insert(owner, repo, true, "oldest", "blacklist");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "blacklist");
 
             // Mock Github call to add miro merge status check
             var miroMergeCheckCallId = await MockGithubCall("post", StatusCheckUrlFor(owner, repo, sha), "pending", "{}", false);
@@ -199,10 +199,7 @@ namespace Miro.Tests
 
             // Insert Merge Request
             await mergeRequestsCollection.InsertWithTestChecksSuccess(owner, repo, PR_ID, branchName);
-            await repoConfigurationCollection.Insert(owner, repo, true);
-
-            // Mock Github call to delete branch
-            var deleteBranchCallId = await MockGithubCall("delete", DeleteBranchUrlFor(owner, repo, branchName), "{}", false);
+            await repoConfigurationCollection.Insert(owner, repo);
 
             payload["repository"]["name"] = repo;
             payload["repository"]["owner"]["login"] = owner;
@@ -214,8 +211,6 @@ namespace Miro.Tests
             await SendWebhookRequest("pull_request", JsonConvert.SerializeObject(payload));
 
             // ASSERT
-            var deleteBranchCall = await GetCall(deleteBranchCallId);
-            Assert.True(deleteBranchCall.HasBeenMade, "delete branch call should have been made");
             var mergeRequest = await mergeRequestsCollection.Collection.Find(d => d["Owner"] == owner && d["Repo"] == repo && d["PrId"] == PR_ID).FirstOrDefaultAsync();
             Assert.Null(mergeRequest);
         }
@@ -232,10 +227,7 @@ namespace Miro.Tests
 
             // Insert Merge Request
             await mergeRequestsCollection.InsertWithTestChecksSuccess(owner, repo, PR_ID, branchName);
-            await repoConfigurationCollection.Insert(owner, repo, false);
-
-            // Mock Github call to delete branch
-            var deleteBranchCallId = await MockGithubCall("delete", DeleteBranchUrlFor(owner, repo, branchName), "{}", false);
+            await repoConfigurationCollection.Insert(owner, repo);
 
             payload["repository"]["name"] = repo;
             payload["repository"]["owner"]["login"] = owner;
@@ -247,8 +239,6 @@ namespace Miro.Tests
             await SendWebhookRequest("pull_request", JsonConvert.SerializeObject(payload));
 
             // ASSERT
-            var deleteBranchCall = await GetCall(deleteBranchCallId);
-            Assert.False(deleteBranchCall.HasBeenMade, "delete branch call should not have been made");
             var mergeRequest = await mergeRequestsCollection.Collection.Find(d => d["Owner"] == owner && d["Repo"] == repo && d["PrId"] == PR_ID).FirstOrDefaultAsync();
             Assert.Null(mergeRequest);
         }

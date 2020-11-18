@@ -61,7 +61,36 @@ namespace Miro.Tests
             Assert.NotNull(repoConfig);
             Assert.Equal("all", repoConfig["UpdateBranchStrategy"]);
             Assert.Equal("whitelist-strict", repoConfig["MergePolicy"]);
-            Assert.False((bool) repoConfig["DeleteAfterMerge"]);
+        }
+
+          [Fact]
+        public async Task PushEventOnMaster_RepoConfigIsCreated_QuietAdded()
+        {
+            var owner = Guid.NewGuid().ToString();
+            var repo = Guid.NewGuid().ToString();
+
+            // Issue Push event
+            var payloadString = await File.ReadAllTextAsync("../../../DummyEvents/Push.json");
+            var payload = JsonConvert.DeserializeObject<dynamic>(payloadString);
+            payload["repository"]["name"] = repo;
+            payload["repository"]["owner"]["login"] = owner;
+
+            // Mock Github call
+            var getConfigFileCallId = await MockRepoConfigGithubCallHelper.MockRepoConfigGithubCall(owner, repo, "quiet.yml");
+            await MockRequiredChecksGithubCallHelper.MockRequiredChecks(owner, repo);
+
+            // ACTION
+            await SendWebhookRequest("push", JsonConvert.SerializeObject(payload));
+
+            // ASSERT
+            var getConfigFileCall = await GetCall(getConfigFileCallId);
+            Assert.True(getConfigFileCall.HasBeenMade, "getConfigFile call should have been made");
+
+            var repoConfig = await repoConfigurationCollection.Collection.Find(d => d["Owner"] == owner && d["Repo"] == repo).FirstAsync();
+            Assert.NotNull(repoConfig);
+            Assert.Equal("all", repoConfig["UpdateBranchStrategy"]);
+            Assert.Equal("whitelist-strict", repoConfig["MergePolicy"]);
+            Assert.True((bool) repoConfig["Quiet"]);
         }
         
 
@@ -92,7 +121,6 @@ namespace Miro.Tests
             Assert.NotNull(repoConfig);
             Assert.Equal("oldest", repoConfig["UpdateBranchStrategy"]);
             Assert.Equal("whitelist", repoConfig["MergePolicy"]);
-            Assert.True((bool) repoConfig["DeleteAfterMerge"]);
         }
         
         
@@ -152,7 +180,6 @@ namespace Miro.Tests
             Assert.NotNull(repoConfig);
             Assert.Equal("oldest", repoConfig["UpdateBranchStrategy"]);
             Assert.Equal("whitelist", repoConfig["MergePolicy"]);
-            Assert.True((bool) repoConfig["DeleteAfterMerge"]);
         }
     }
 }

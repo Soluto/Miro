@@ -35,10 +35,10 @@ namespace MiroConfig
             };
              var update = Builders<RepoConfig>.Update
                 .Set(r => r.UpdatedAt, DateTime.UtcNow)
-                .Set(r => r.DeleteAfterMerge, config.DeleteAfterMerge)
                 .Set(r => r.MergePolicy, config.MergePolicy)
                 .Set(r => r.UpdateBranchStrategy, config.UpdateBranchStrategy)
-                .Set(r => r.DefaultBranch, config.DefaultBranch);
+                .Set(r => r.DefaultBranch, config.DefaultBranch)
+                .Set(r => r.Quiet, config.Quiet);
 
 
             return collection.FindOneAndUpdateAsync<RepoConfig>(r => r.Owner == config.Owner && r.Repo == config.Repo, update, options);

@@ -26,5 +26,6 @@ namespace Miro.Services.Comments
         public const string MiroCancelBody = "You told miro to cancel";
         public const string MiroWipHeader = "Work in Progress, Copy that!";
         public const string MiroWipBody = "Still working on this bad boy? \n Miro will hold off merging this Pull Request. \n When you're ready, type `miro merge`";
+        public const string MiroMergeCheckName = "Miro merge check";
     }
 }
