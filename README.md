@@ -79,6 +79,8 @@ updateBranchStrategy: all|oldest|none # When a PR is merged, how do we update th
 mergePolicy: whitelist|blacklist|whitelist-strict # Merging strategy - default: whitelist
 
 defaultBranch: master # describes the branch that Miro listens to for updating, merging and all operations - default: master
+
+quiet: false # if set to true, Miro will write less commits on your repo, notifiying you only when merging fails
 ```
 
 #### mergePolicy (whitelist | blacklist | whitelist-strict)

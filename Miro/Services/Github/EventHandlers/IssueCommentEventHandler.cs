@@ -124,8 +124,8 @@ namespace Miro.Services.Github.EventHandlers
         {
             var mergeRequest = await mergeRequestRepository.UpdateMergeCommand(owner, repo, prId, true, DateTime.UtcNow);
 
-            await PrintMergeInfo(mergeRequest);
             var config = await repoConfigManager.GetConfig(owner, repo);
+            await PrintMergeInfo(mergeRequest, config.IsWhitelistStrict());
             if (config.IsWhitelistStrict())
             {
                 logger.WithMergeRequestData(mergeRequest).Information("Repository has a whitelist-strict merge policy, resolving miro check on PR");
@@ -135,18 +135,18 @@ namespace Miro.Services.Github.EventHandlers
             return new WebhookResponse(true, $"handled Miro merge command, did branch merge: {merged}");
         }
 
-        private async Task<WebhookResponse> PrintMergeInfo(MergeRequest mergeRequest)
+        private async Task<WebhookResponse> PrintMergeInfo(MergeRequest mergeRequest, bool ignoreMiroMergeCheck = false)
         {
             if (mergeRequest == null)
             {
-                logger.Warning($"Received TryToMerge command from a null mergeRequest");
-                throw new Exception("Can not merge, PR is not defined");
+                logger.Warning($"Received PrintMergeInfo command from a null mergeRequest");
+                throw new Exception("Can not print info, PR is not defined");
             }
 
             var owner = mergeRequest.Owner;
             var repo = mergeRequest.Repo;
             var prId = mergeRequest.PrId;
-            var mergeabilityValidationErrors = await mergeabilityValidator.ValidateMergeability(mergeRequest);
+            var mergeabilityValidationErrors = await mergeabilityValidator.ValidateMergeability(mergeRequest, ignoreMiroMergeCheck);
 
             if (mergeabilityValidationErrors.Any())
             {

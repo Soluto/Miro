@@ -12,6 +12,7 @@ namespace Miro.Models.MiroConfig
         public string MergePolicy { get; set; } = "whitelist";
         public string UpdateBranchStrategy { get; set; }  = "oldest";
         public string DefaultBranch { get; set; }  = "master";
+        public bool Quiet { get; set; }  = false;
         public DateTime UpdatedAt { get; set; }
     }
 

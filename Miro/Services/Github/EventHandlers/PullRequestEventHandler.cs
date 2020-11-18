@@ -143,8 +143,9 @@ namespace Miro.Services.Github.EventHandlers
             var isFork = payload.PullRequest.Head.Repo?.Fork ?? false;
             var config = await repoConfigManager.GetConfig(owner, repo);
             var mergePolicy = config.MergePolicy;
+            var quiet = config.Quiet;
             var defaultBranch = config.DefaultBranch;
-            var extraLoggerData = new { owner, repo, prId, title, sha, branch, author, baseRef, payloadAction, mergePolicy, isFork, defaultBranch };
+            var extraLoggerData = new { owner, repo, prId, title, sha, branch, author, baseRef, payloadAction, mergePolicy, isFork, defaultBranch, quiet };
             if (baseRef != defaultBranch)
             {
                  logger.WithExtraData(extraLoggerData)
