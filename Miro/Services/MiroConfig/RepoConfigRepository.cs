@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Miro.Models.MiroConfig;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 namespace MiroConfig
 {
+    [BsonIgnoreExtraElements]
     public class RepoConfigRepository
     {
         private readonly IMongoCollection<RepoConfig> collection;
