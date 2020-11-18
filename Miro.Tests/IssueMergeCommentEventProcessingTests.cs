@@ -166,7 +166,7 @@ namespace Miro.Tests
             // Mock DB
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
             await mergeRequestsCollection.InsertWithTestChecksSuccess(owner, repo, PR_ID, branch, sha);
-            await repoConfigurationCollection.Insert(owner, repo, false, "oldest", "whitelist-strict");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "whitelist-strict");
 
             payload["repository"]["name"] = repo;
             payload["repository"]["owner"]["login"] = owner;
@@ -340,7 +340,7 @@ namespace Miro.Tests
             var sha = Guid.NewGuid().ToString();
 
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
-            await repoConfigurationCollection.Insert(owner, repo, false, "oldest", "whitelist-strict");
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "whitelist-strict");
 
             payload["repository"]["name"] = repo;
             payload["repository"]["owner"]["login"] = owner;
@@ -386,7 +386,7 @@ namespace Miro.Tests
             var sha = Guid.NewGuid().ToString();
 
             await checkListsCollection.InsertWithDefaultChecks(owner, repo);
-            await repoConfigurationCollection.Insert(owner, repo, false, "oldest", "whitelist-strict", "master", true);
+            await repoConfigurationCollection.Insert(owner, repo, "oldest", "whitelist-strict", "master", true);
 
             payload["repository"]["name"] = repo;
             payload["repository"]["owner"]["login"] = owner;
