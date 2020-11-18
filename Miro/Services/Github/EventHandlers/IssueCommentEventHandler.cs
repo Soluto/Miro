@@ -66,7 +66,7 @@ namespace Miro.Services.Github.EventHandlers
                 logger.WithExtraData(new { comment }).Information("Comment doesn't contain a miro command, ignoring");
                 return new WebhookResponse(false, "Comment doesn't contain a miro command, ignoring");
             }
-            
+
             return await HandleMiroCommand(issueCommentEvent, match.Groups[1].Value.ToLower());
         }
 
@@ -75,7 +75,7 @@ namespace Miro.Services.Github.EventHandlers
             var owner = issueCommentEvent.Repository.Owner.Login;
             var repo = issueCommentEvent.Repository.Name;
             var prId = issueCommentEvent.Issue.Number;
-            
+
             logger.WithExtraData(new { miroCommand, owner, repo, prId }).Information($"Handling miro comment command");
 
             var mergeRequest = await mergeRequestRepository.Get(owner, repo, prId);
@@ -106,16 +106,16 @@ namespace Miro.Services.Github.EventHandlers
 
         private async Task<WebhookResponse> HandleMiroWipCommand(string owner, string repo, int prId)
         {
-             await Task.WhenAll(
-                mergeRequestRepository.UpdateMergeCommand(owner, repo, prId, false, DateTime.MaxValue), 
-                commentCreator.CreateComment(owner, repo, prId, CommentsConsts.MiroWipHeader, CommentsConsts.MiroWipBody));
+            await Task.WhenAll(
+               mergeRequestRepository.UpdateMergeCommand(owner, repo, prId, false, DateTime.MaxValue),
+               commentCreator.CreateComment(owner, repo, prId, CommentsConsts.MiroWipHeader, CommentsConsts.MiroWipBody));
             return new WebhookResponse(true, "handled Miro wip command");
         }
 
         private async Task<WebhookResponse> HandleMiroCancelCommand(string owner, string repo, int prId)
         {
             await Task.WhenAll(
-                mergeRequestRepository.UpdateMergeCommand(owner, repo, prId, false, DateTime.MaxValue), 
+                mergeRequestRepository.UpdateMergeCommand(owner, repo, prId, false, DateTime.MaxValue),
                 commentCreator.CreateComment(owner, repo, prId, CommentsConsts.MiroCancelHeader, CommentsConsts.MiroCancelBody));
             return new WebhookResponse(true, "handled Miro cancel command");
         }
@@ -125,7 +125,7 @@ namespace Miro.Services.Github.EventHandlers
             var mergeRequest = await mergeRequestRepository.UpdateMergeCommand(owner, repo, prId, true, DateTime.UtcNow);
 
             var config = await repoConfigManager.GetConfig(owner, repo);
-            await PrintMergeInfo(mergeRequest, config.IsWhitelistStrict());
+            await PrintMergeInfoForMergeCommand(mergeRequest, config.IsWhitelistStrict(), config.Quiet);
             if (config.IsWhitelistStrict())
             {
                 logger.WithMergeRequestData(mergeRequest).Information("Repository has a whitelist-strict merge policy, resolving miro check on PR");
@@ -135,7 +135,7 @@ namespace Miro.Services.Github.EventHandlers
             return new WebhookResponse(true, $"handled Miro merge command, did branch merge: {merged}");
         }
 
-        private async Task<WebhookResponse> PrintMergeInfo(MergeRequest mergeRequest, bool ignoreMiroMergeCheck = false)
+        private async Task PrintMergeInfoForMergeCommand(MergeRequest mergeRequest, bool ignoreMiroMergeCheck = false, bool quiet = false)
         {
             if (mergeRequest == null)
             {
@@ -152,7 +152,32 @@ namespace Miro.Services.Github.EventHandlers
             {
                 var errors = mergeabilityValidationErrors.Select(x => x.Error);
                 await commentCreator.CreateListedComment(owner, repo, prId, CommentsConsts.MiroInfoMergeNotReady, errors.ToList());
-                return new WebhookResponse(true, $"handled Miro info command");;
+            }
+            if (!quiet)
+            {
+                await commentCreator.CreateComment(owner, repo, prId, CommentsConsts.MiroInfoMergeReady, CommentsConsts.PrIsMergeableBody);
+            }
+
+        }
+
+        private async Task<WebhookResponse> PrintMergeInfo(MergeRequest mergeRequest)
+        {
+            if (mergeRequest == null)
+            {
+                logger.Warning($"Received PrintMergeInfo command from a null mergeRequest");
+                throw new Exception("Can not print info, PR is not defined");
+            }
+
+            var owner = mergeRequest.Owner;
+            var repo = mergeRequest.Repo;
+            var prId = mergeRequest.PrId;
+            var mergeabilityValidationErrors = await mergeabilityValidator.ValidateMergeability(mergeRequest);
+
+            if (mergeabilityValidationErrors.Any())
+            {
+                var errors = mergeabilityValidationErrors.Select(x => x.Error);
+                await commentCreator.CreateListedComment(owner, repo, prId, CommentsConsts.MiroInfoMergeNotReady, errors.ToList());
+                return new WebhookResponse(true, $"handled Miro info command"); ;
             }
             await commentCreator.CreateComment(owner, repo, prId, CommentsConsts.MiroInfoMergeReady, CommentsConsts.PrIsMergeableBody);
             return new WebhookResponse(true, $"handled Miro info command");

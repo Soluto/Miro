@@ -374,6 +374,52 @@ namespace Miro.Tests
             Assert.Equal("success" ,miroMergeCheckCall.Details.Body["state"]);
         }
 
+         
+        [Fact]
+        public async Task ReceiveMergeCommand_PrIsApprovedByAllReviewersAndAllChecksPassed_StrictMergePolicy_Quiet_MergePr()
+        {
+            var payloadString = await File.ReadAllTextAsync("../../../DummyEvents/IssueComment.json");
+            var payload = JsonConvert.DeserializeObject<dynamic>(payloadString);
+
+            var owner = Guid.NewGuid().ToString();
+            var repo = Guid.NewGuid().ToString();
+            var sha = Guid.NewGuid().ToString();
+
+            await checkListsCollection.InsertWithDefaultChecks(owner, repo);
+            await repoConfigurationCollection.Insert(owner, repo, false, "oldest", "whitelist-strict", "master", true);
+
+            payload["repository"]["name"] = repo;
+            payload["repository"]["owner"]["login"] = owner;
+
+
+            await mergeRequestsCollection.InsertWithTestChecksSuccess(owner, repo, PR_ID, null, sha);
+
+            // Mock github calls
+            var mergeCommentCallId = await MockCommentGithubCallHelper.MockCommentGithubCallMerging(owner, repo, PR_ID);
+            var mergePrCallId = await MockMergeGithubCallHelper.MockMergeCall(owner, repo, PR_ID);
+            await MockReviewGithubCallHelper.MockAllReviewsPassedResponses(owner, repo, PR_ID);
+            var commentReadyForMergingCallId = await MockCommentGithubCallHelper.MockCommentGithubPRIsReadyForMerging(owner, repo, PR_ID);
+            var miroMergeCheckCallId = await MockGithubCall("post", StatusCheckUrlFor(owner, repo, sha), "{}", false);
+
+            // Action
+            await SendWebhookRequest("issue_comment", JsonConvert.SerializeObject(payload));
+
+            var commentReadyForMergingCall = await GetCall(commentReadyForMergingCallId);
+            var mergeCommentCall = await GetCall(mergeCommentCallId);
+            var mergePrCall = await GetCall(mergePrCallId);
+            var miroMergeCheckCall = await GetCall(miroMergeCheckCallId);
+            Assert.False(commentReadyForMergingCall.HasBeenMade, "should not have receieved a ready for merging comment");
+            Assert.False(mergeCommentCall.HasBeenMade, "a merging comment should not have been posted to the pr");
+            Assert.True(miroMergeCheckCall.HasBeenMade, "a call to miro merge status check should have been called");
+            Assert.True(mergePrCall.HasBeenMade, "pr should have been merged");
+
+            var mergeRequest = await mergeRequestsCollection.Collection.Find(d => d["Owner"] == owner && d["Repo"] == repo && d["PrId"] == PR_ID && d["ReceivedMergeCommand"] == true).FirstAsync();
+            Assert.NotNull(mergeRequest);
+
+            Assert.Equal("Miro merge check" ,miroMergeCheckCall.Details.Body["context"]);
+            Assert.Equal("success" ,miroMergeCheckCall.Details.Body["state"]);
+        }
+
 
          [Fact]
         public async Task ReceiveMergeCommand_PrIsApprovedByAllReviewersAndAllChecksPassed_GetRequiredChecksAndMergePr()
